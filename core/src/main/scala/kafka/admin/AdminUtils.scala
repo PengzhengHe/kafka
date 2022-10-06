@@ -122,6 +122,27 @@ object AdminUtils extends Logging {
     }
   }
 
+  def main(args: Array[String]): Unit = {
+
+    val brokers = 0 to 4
+    val numPartitions = 2
+    val nunReplicas = 9
+
+    val ret = assignReplicasToBrokersRackUnaware(
+      numPartitions,
+      nunReplicas,
+      brokers,
+      -1,
+      -1
+    )
+
+    ret foreach {
+      case (partition, brokerList) =>
+        println(s"$partition => ${brokerList.mkString(", ")}")
+    }
+
+  }
+
   private def assignReplicasToBrokersRackUnaware(nPartitions: Int,
                                                  replicationFactor: Int,
                                                  brokerList: Iterable[Int],
@@ -132,6 +153,7 @@ object AdminUtils extends Logging {
     val startIndex = if (fixedStartIndex >= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
     var currentPartitionId = math.max(0, startPartitionId)
     var nextReplicaShift = if (fixedStartIndex >= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
+    println(s"startIndex: $startIndex, currentPartitionId: $currentPartitionId, nextReplicaShift: $nextReplicaShift")
     for (_ <- 0 until nPartitions) {
       if (currentPartitionId > 0 && (currentPartitionId % brokerArray.length == 0))
         nextReplicaShift += 1
